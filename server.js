@@ -4,7 +4,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Твои настройки Telegram из переменной окружения или напрямую
-const BOT_TOKEN = process.env.BOT_TOKEN || 'ТВОЙ_TELEGRAM_BOT_TOKEN';
+const BOT_TOKEN = process.env.BOT_TOKEN || '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8';
 const CHAT_ID = process.env.CHAT_ID || 'ТВОЙ_TELEGRAM_CHAT_ID';
 
 const AI_BOTS = [
@@ -24,7 +24,7 @@ app.get('*', async (req, res) => {
         `<b>URL:</b> <code>${req.url}</code>`;
 
     // Отправка в Telegram прямо с сервера (без CORS и ограничений браузера)
-    if (BOT_TOKEN !== 'ТВОЙ_TELEGRAM_BOT_TOKEN') {
+    if (BOT_TOKEN !== '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8') {
         try {
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',

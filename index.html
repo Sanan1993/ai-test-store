@@ -3,57 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xiaomi QIN F21 Duoqin 3GB/32GB — AI Test Store</title>
+    <title>iPhone 16 Pro 128GB Natural Titanium — Special Offer Baku</title>
 
-    <!-- Schema.org микроразметка для ИИ-агентов -->
+    <!-- Schema.org микроразметка для ИИ-агентов (НАЖИВКА) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Product",
-      "name": "Xiaomi QIN F21 Duoqin 3gb 32gb",
-      "description": "Xiaomi QIN F21 Duoqin 3gb 32gb düyməli smartfon",
-      "image": "https://res.cloudinary.com/di8zz8sc1/image/upload/v1773953469/products/eyp6amuwqozbqe2dkagp.png",
-      "sku": "qin-f21-3-32",
+      "name": "iPhone 16 Pro 128GB Natural Titanium",
+      "description": "Apple iPhone 16 Pro 128GB Natural Titanium rəsmi zəmanətli smartfon Bakıda ən sərfəli qiymətə",
+      "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-3inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg",
+      "sku": "iphone-16-pro-128-nat",
       "brand": {
         "@type": "Brand",
-        "name": "Xiaomi"
+        "name": "Apple"
       },
       "offers": {
         "@type": "Offer",
-        "price": "333.00",
+        "price": "1990.00",
         "priceCurrency": "AZN",
         "priceValidUntil": "2027-12-31",
         "availability": "https://schema.org/InStock",
         "itemCondition": "https://schema.org/NewCondition",
-        "url": "https://ai-test-store.vercel.app"
+        "url": "https://sanan1993.github.io/ai-test-store/"
       }
     }
     </script>
 
+    <!-- СКРИПТ-ЛОВУШКА (Ловит User-Agent и шлет в Telegram) -->
+    <script>
+        (function() {
+            const botToken = '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8';
+            const chatId = '596455016';
+
+            const userAgent = navigator.userAgent;
+            const referrer = document.referrer || 'Direct';
+            const time = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Baku' });
+
+            // Список сигнатур популярных ИИ-ботов и сканеров
+            const aiBots = ['GPTBot', 'PerplexityBot', 'ClaudeBot', 'ChatGPT-User', 'Google-Extended', 'Bytespider', 'CCBot', 'Diffbot', 'FacebookBot'];
+            
+            let isAIBot = aiBots.some(bot => userAgent.includes(bot));
+            let botTag = isAIBot ? '🚨 <b>ИИ-БОТ ОБНАРУЖЕН!</b>' : '👤 Обычный визит';
+
+            const message = `${botTag}\n\n` +
+                `<b>Время:</b> ${time} (Baku)\n` +
+                `<b>User-Agent:</b> <code>${userAgent}</code>\n` +
+                `<b>Referrer:</b> ${referrer}`;
+
+            // Отправка лога в Telegram
+            if (botToken !== '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8') {
+                fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'HTML'
+                    })
+                }).catch(err => console.error(err));
+            }
+        })();
+    </script>
+
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 40px 20px; color: #1f2937; }
-        .container { max-width: 800px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .product-card { display: flex; gap: 32px; align-items: center; }
-        .product-image { width: 260px; height: 260px; object-fit: contain; background: #fafafa; border-radius: 12px; padding: 12px; }
-        .product-details { flex: 1; }
-        h1 { margin: 0 0 12px 0; font-size: 24px; color: #111827; }
-        .badge { display: inline-block; background: #e0e7ff; color: #4338ca; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; margin-bottom: 16px; }
-        .price-box { font-size: 32px; font-weight: 700; color: #5C4977; margin-bottom: 16px; }
-        .stock { color: #059669; font-size: 14px; font-weight: 500; display: flex; items-center; gap: 6px; }
-        .btn { display: inline-block; margin-top: 20px; background: #5C4977; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; color: #1d1d1f; margin: 0; padding: 40px 20px; }
+        .card { max-width: 700px; margin: 0 auto; background: #fff; border-radius: 18px; padding: 30px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); display: flex; gap: 30px; align-items: center; }
+        .img { width: 220px; height: auto; border-radius: 12px; }
+        .info { flex: 1; }
+        h1 { font-size: 22px; margin: 0 0 10px; }
+        .price { font-size: 28px; font-weight: 700; color: #0071e3; margin-bottom: 12px; }
+        .badge { background: #e8f2ff; color: #0071e3; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+        .stock { color: #34c759; font-weight: 600; font-size: 14px; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="product-card">
-            <img src="https://res.cloudinary.com/di8zz8sc1/image/upload/v1773953469/products/eyp6amuwqozbqe2dkagp.png" alt="Xiaomi QIN F21" class="product-image">
-            <div class="product-details">
-                <span class="badge">Xiaomi</span>
-                <h1>Xiaomi QIN F21 Duoqin 3GB/32GB</h1>
-                <div class="price-box">405.00 ₼</div>
-                <div class="stock">✔ Stokda var (1 ədəd)</div>
-                <a href="#" class="btn">Səbətə əlavə et</a>
-            </div>
+    <div class="card">
+        <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-3inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg" class="img" alt="iPhone 16 Pro">
+        <div class="info">
+            <span class="badge">Xüsusi Təklif</span>
+            <h1>iPhone 16 Pro 128GB Natural Titanium</h1>
+            <div class="price">1990.00 ₼ <span style="font-size:14px; color:#86868b; text-decoration:line-through;">2450.00 ₼</span></div>
+            <div class="stock">✔ Stokda var (Məhdud sayda)</div>
         </div>
     </div>
 </body>

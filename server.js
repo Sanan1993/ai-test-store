@@ -4,8 +4,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Твои настройки Telegram из переменной окружения или напрямую
-const BOT_TOKEN = process.env.BOT_TOKEN || '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8';
-const CHAT_ID = process.env.CHAT_ID || '596455016';
+const BOT_TOKEN = '8805285337:AAFekM5hRqF555E3DGhLmgMhRqAiB5-goT8';
+const CHAT_ID = '596455016';
 
 const AI_BOTS = [
     'GPTBot', 'ChatGPT-User', 'PerplexityBot', 'ClaudeBot', 

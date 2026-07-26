@@ -1,9 +1,8 @@
 const express = require('express');
-const fetch = require('node-fetch');
+const https = require('https');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Твои настройки Telegram из переменной окружения или напрямую
 const BOT_TOKEN = '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8';
 const CHAT_ID = '596455016';
 
@@ -12,35 +11,58 @@ const AI_BOTS = [
     'Google-Extended', 'Bytespider', 'CCBot', 'FacebookBot', 'Diffbot'
 ];
 
-app.get('*', async (req, res) => {
+// Функция отправки в Telegram через стандартный HTTPS Node.js
+function sendTelegramMessage(text) {
+    const data = JSON.stringify({
+        chat_id: CHAT_ID,
+        text: text,
+        parse_mode: 'HTML'
+    });
+
+    const options = {
+        hostname: 'api.telegram.org',
+        port: 443,
+        path: `/bot${BOT_TOKEN}/sendMessage`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(data)
+        }
+    };
+
+    const req = https.request(options, (res) => {
+        let responseData = '';
+        res.on('data', chunk => { responseData += chunk; });
+        res.on('end', () => { console.log('Telegram API Status:', res.statusCode, responseData); });
+    });
+
+    req.on('error', (error) => {
+        console.error('Telegram Error:', error);
+    });
+
+    req.write(data);
+    req.end();
+}
+
+app.get('*', (req, res) => {
+    // Игнорируем иконку сайта
+    if (req.url === '/favicon.ico') {
+        return res.status(204).end();
+    }
+
     const userAgent = req.headers['user-agent'] || 'Unknown';
     const isAi = AI_BOTS.some(bot => userAgent.toLowerCase().includes(bot.toLowerCase()));
     
-    // Формируем красивый лог
     const tag = isAi ? '🚨 <b>ИИ-БОТ ОБНАРУЖЕН!</b>' : '👤 Визит на сервер';
     const message = `${tag}\n\n` +
         `<b>IP:</b> <code>${req.headers['x-forwarded-for'] || req.socket.remoteAddress}</code>\n` +
         `<b>User-Agent:</b> <code>${userAgent}</code>\n` +
         `<b>URL:</b> <code>${req.url}</code>`;
 
-    // Отправка в Telegram прямо с сервера (без CORS и ограничений браузера)
-    if (BOT_TOKEN !== '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8') {
-        try {
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: CHAT_ID,
-                    text: message,
-                    parse_mode: 'HTML'
-                })
-            });
-        } catch (e) {
-            console.error('Ошибка Telegram:', e);
-        }
-    }
+    // Отправляем логи в Telegram
+    sendTelegramMessage(message);
 
-    // Отдаем чистую HTML-страницу с наживкой
+    // Отдаем HTML с микроразметкой
     res.send(`
 <!DOCTYPE html>
 <html lang="az">

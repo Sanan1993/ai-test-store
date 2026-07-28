@@ -7,9 +7,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Telegram Config (берем из переменных окружения Render или прописываем прямо)
-const 8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8 = process.env.8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8 || 'ТВОЙ_ТОКЕН_БОТА';
-const 596455016 = process.env.596455016 || 'ТВОЙ_CHAT_ID';
-
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8';
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '596455016';
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

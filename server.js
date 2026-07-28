@@ -6,9 +6,10 @@ const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Telegram Config (берем из переменных окружения Render или прописываем прямо)
+// Telegram Config
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '596455016';
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -57,13 +58,13 @@ app.use((req, res, next) => {
 
 // Функция отправки сообщений в Telegram
 async function sendTelegramAlert(text) {
-  if (!8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8 || !596455016 || 8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8 === 'ТВОЙ_ТОКЕН_БОТА') {
-    console.log('[LOG] Telegram-уведомление не отправлено (не заданы ключи).');
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.log('[LOG] Telegram-уведомление не отправлено.');
     return;
   }
   try {
-    await axios.post(`https://api.telegram.org/bot${8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8}/sendMessage`, {
-      chat_id: 596455016,
+    await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      chat_id: TELEGRAM_CHAT_ID,
       text: text,
       parse_mode: 'HTML'
     });

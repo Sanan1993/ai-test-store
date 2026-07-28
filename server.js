@@ -56,10 +56,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Функция отправки сообщений в Telegram через встроенную библиотеку https
+// Функция отправки сообщений в Telegram через https
 function sendTelegramAlert(text) {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.log('[LOG] Telegram-уведомление не отправлено (нет токена).');
+    console.log('[LOG] Telegram-уведомление не отправлено.');
     return;
   }
 
@@ -90,6 +90,39 @@ function sendTelegramAlert(text) {
 
   req.write(payload);
   req.end();
+}
+
+// Генератор JSON-LD Schema.org для карточки товара
+function generateSchemaJsonLd(product, host, protocol) {
+  const productUrl = `${protocol}://${host}/product/${product.id}`;
+  
+  const schema = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": [product.image],
+    "description": product.description,
+    "sku": product.sku,
+    "brand": {
+      "@type": "Brand",
+      "name": product.brand
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": productUrl,
+      "priceCurrency": product.currency,
+      "price": product.price,
+      "priceValidUntil": "2027-12-31",
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": product.availability === "InStock" ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "AI Bait Store Baku"
+      }
+    }
+  };
+
+  return JSON.stringify(schema, null, 2);
 }
 
 // 1. Главная страница — Каталог товаров
@@ -148,6 +181,8 @@ app.get('/product/:id', (req, res) => {
     return res.status(404).send('<h1>Товар не найден (404)</h1><a href="/">Вернуться в каталог</a>');
   }
 
+  const jsonLdData = generateSchemaJsonLd(product, req.get('host'), req.protocol);
+
   res.send(`
     <!DOCTYPE html>
     <html lang="ru">
@@ -156,6 +191,12 @@ app.get('/product/:id', (req, res) => {
       <title>${product.name} — Купить в Баку по цене ${product.price} ${product.currency}</title>
       <meta name="description" content="${product.description}">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <!-- Schema.org JSON-LD Разметка для ИИ-ботов -->
+      <script type="application/ld+json">
+      ${jsonLdData}
+      </script>
+
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f4f6f8; color: #333; }
         .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }

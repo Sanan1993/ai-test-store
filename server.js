@@ -1,120 +1,212 @@
 const express = require('express');
-const https = require('https');
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const BOT_TOKEN = '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8';
-const CHAT_ID = '596455016';
+// Telegram Config (берем из переменных окружения Render или прописываем прямо)
+const 8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8 = process.env.8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8 || 'ТВОЙ_ТОКЕН_БОТА';
+const 596455016 = process.env.596455016 || 'ТВОЙ_CHAT_ID';
 
-const AI_BOTS = [
-    'GPTBot', 'ChatGPT-User', 'PerplexityBot', 'ClaudeBot', 
-    'Google-Extended', 'Bytespider', 'CCBot', 'FacebookBot', 'Diffbot'
-];
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Функция отправки в Telegram через стандартный HTTPS Node.js
-function sendTelegramMessage(text) {
-    const data = JSON.stringify({
-        chat_id: CHAT_ID,
-        text: text,
-        parse_mode: 'HTML'
-    });
-
-    const options = {
-        hostname: 'api.telegram.org',
-        port: 443,
-        path: `/bot${BOT_TOKEN}/sendMessage`,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(data)
-        }
-    };
-
-    const req = https.request(options, (res) => {
-        let responseData = '';
-        res.on('data', chunk => { responseData += chunk; });
-        res.on('end', () => { console.log('Telegram API Status:', res.statusCode, responseData); });
-    });
-
-    req.on('error', (error) => {
-        console.error('Telegram Error:', error);
-    });
-
-    req.write(data);
-    req.end();
+// Загрузка базы данных товаров
+let products = [];
+try {
+  const data = fs.readFileSync(path.join(__dirname, 'products.json'), 'utf8');
+  products = JSON.parse(data);
+  console.log(`[INFO] Успешно загружено ${products.length} товаров из products.json`);
+} catch (err) {
+  console.error('[ERROR] Ошибка чтения products.json:', err.message);
 }
 
-app.get('*', (req, res) => {
-    // Игнорируем иконку сайта
-    if (req.url === '/favicon.ico') {
-        return res.status(204).end();
-    }
+// Список известных ИИ-краулеров для Telegram-алертов
+const AI_BOTS = [
+  { name: 'PerplexityBot', pattern: /PerplexityBot/i },
+  { name: 'GPTBot (OpenAI)', pattern: /GPTBot/i },
+  { name: 'ChatGPT-User', pattern: /ChatGPT-User/i },
+  { name: 'ClaudeBot (Anthropic)', pattern: /ClaudeBot/i },
+  { name: 'Claude-Web', pattern: /Claude-Web/i },
+  { name: 'Bytespider (TikTok)', pattern: /Bytespider/i },
+  { name: 'Google-Extended', pattern: /Google-Extended/i },
+  { name: 'Amazonbot', pattern: /Amazonbot/i },
+  { name: 'Applebot-Extended', pattern: /Applebot-Extended/i }
+];
 
-    const userAgent = req.headers['user-agent'] || 'Unknown';
-    const isAi = AI_BOTS.some(bot => userAgent.toLowerCase().includes(bot.toLowerCase()));
-    
-    const tag = isAi ? '🚨 <b>ИИ-БОТ ОБНАРУЖЕН!</b>' : '👤 Визит на сервер';
-    const message = `${tag}\n\n` +
-        `<b>IP:</b> <code>${req.headers['x-forwarded-for'] || req.socket.remoteAddress}</code>\n` +
-        `<b>User-Agent:</b> <code>${userAgent}</code>\n` +
-        `<b>URL:</b> <code>${req.url}</code>`;
+// Мидлвар для логирования визитов ИИ-ботов
+app.use((req, res, next) => {
+  const userAgent = req.get('User-Agent') || '';
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-    // Отправляем логи в Telegram
-    sendTelegramMessage(message);
+  const matchedBot = AI_BOTS.find(bot => bot.pattern.test(userAgent));
 
-    // Отдаем HTML с микроразметкой
-    res.send(`
-<!DOCTYPE html>
-<html lang="az">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iPhone 16 Pro 128GB Natural Titanium — Special Offer Baku</title>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": "iPhone 16 Pro 128GB Natural Titanium",
-      "description": "Apple iPhone 16 Pro 128GB Natural Titanium rəsmi zəmanətli smartfon Bakıda ən sərfəli qiymətə",
-      "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-3inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg",
-      "sku": "iphone-16-pro-128-nat",
-      "brand": { "@type": "Brand", "name": "Apple" },
-      "offers": {
-        "@type": "Offer",
-        "price": "1990.00",
-        "priceCurrency": "AZN",
-        "priceValidUntil": "2027-12-31",
-        "availability": "https://schema.org/InStock",
-        "itemCondition": "https://schema.org/NewCondition"
-      }
-    }
-    </script>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; color: #1d1d1f; margin: 0; padding: 40px 20px; }
-        .card { max-width: 700px; margin: 0 auto; background: #fff; border-radius: 18px; padding: 30px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); display: flex; gap: 30px; align-items: center; }
-        .img { width: 220px; height: auto; border-radius: 12px; }
-        .info { flex: 1; }
-        h1 { font-size: 22px; margin: 0 0 10px; }
-        .price { font-size: 28px; font-weight: 700; color: #0071e3; margin-bottom: 12px; }
-        .badge { background: #e8f2ff; color: #0071e3; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-        .stock { color: #34c759; font-weight: 600; font-size: 14px; margin-top: 10px; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-3inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg" class="img" alt="iPhone 16 Pro">
-        <div class="info">
-            <span class="badge">Xüsusi Təklif</span>
-            <h1>iPhone 16 Pro 128GB Natural Titanium</h1>
-            <div class="price">1990.00 ₼ <span style="font-size:14px; color:#86868b; text-decoration:line-through;">2450.00 ₼</span></div>
-            <div class="stock">✔ Stokda var (Məhdud sayda)</div>
+  if (matchedBot) {
+    const msg = `🚨 <b>ИИ-БОТ ОБНАРУЖЕН!</b>\n\n` +
+                `<b>Бот:</b> ${matchedBot.name}\n` +
+                `<b>URL:</b> <code>${req.originalUrl}</code>\n` +
+                `<b>IP:</b> ${ip}\n` +
+                `<b>User-Agent:</b> <code>${userAgent}</code>`;
+
+    sendTelegramAlert(msg);
+  }
+
+  next();
+});
+
+// Функция отправки сообщений в Telegram
+async function sendTelegramAlert(text) {
+  if (!8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8 || !596455016 || 8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8 === 'ТВОЙ_ТОКЕН_БОТА') {
+    console.log('[LOG] Telegram-уведомление не отправлено (не заданы ключи).');
+    return;
+  }
+  try {
+    await axios.post(`https://api.telegram.org/bot${8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8}/sendMessage`, {
+      chat_id: 596455016,
+      text: text,
+      parse_mode: 'HTML'
+    });
+  } catch (err) {
+    console.error('[ERROR] Ошибка отправки в Telegram:', err.message);
+  }
+}
+
+// 1. Главная страница — Каталог товаров
+app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+      <meta charset="UTF-8">
+      <title>Каталог товаров и услуг в Баку | AI Bait Store</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f4f6f8; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { text-align: center; color: #111; }
+        p.subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
+        .card h3 { margin-top: 0; font-size: 1.1rem; color: #1a0dab; }
+        .category { font-size: 0.8rem; background: #eef2ff; color: #4f46e5; padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 10px; }
+        .price { font-size: 1.25rem; font-weight: bold; color: #059669; margin: 10px 0; }
+        .btn { display: block; text-align: center; background: #2563eb; color: white; text-decoration: none; padding: 10px; border-radius: 8px; font-weight: 500; }
+        .btn:hover { background: #1d4ed8; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Каталог товаров и услуг в Баку</h1>
+        <p class="subtitle">Официальные цены, гарантия и быстрая доставка по Азербайджану</p>
+        <div class="grid">
+          ${products.map(p => `
+            <div class="card">
+              <div>
+                <span class="category">${p.category}</span>
+                <h3>${p.name}</h3>
+                <p style="font-size: 0.9rem; color: #555;">${p.description.substring(0, 90)}...</p>
+              </div>
+              <div>
+                <div class="price">${p.price > 0 ? p.price + ' ' + p.currency : 'Бесплатно / Заказ'}</div>
+                <a href="/product/${p.id}" class="btn">Посмотреть товар</a>
+              </div>
+            </div>
+          `).join('')}
         </div>
-    </div>
-</body>
-</html>
-    `);
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+// 2. Динамическая страница товара
+app.get('/product/:id', (req, res) => {
+  const product = products.find(p => p.id === req.params.id);
+
+  if (!product) {
+    return res.status(404).send('<h1>Товар не найден (404)</h1><a href="/">Вернуться в каталог</a>');
+  }
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+      <meta charset="UTF-8">
+      <title>${product.name} — Купить в Баку по цене ${product.price} ${product.currency}</title>
+      <meta name="description" content="${product.description}">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f4f6f8; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        a.back { text-decoration: none; color: #2563eb; font-weight: 500; display: inline-block; margin-bottom: 20px; }
+        h1 { font-size: 1.8rem; margin-top: 0; }
+        .price { font-size: 2rem; font-weight: bold; color: #059669; margin: 15px 0; }
+        .specs { background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .specs table { width: 100%; border-collapse: collapse; }
+        .specs td { padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+        .specs td:first-child { font-weight: 500; color: #64748b; }
+        .btn-buy { background: #059669; color: white; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; }
+        .btn-buy:hover { background: #047857; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <a href="/" class="back">← Назад в каталог</a>
+        <h1>${product.name}</h1>
+        <p><strong>Бренд:</strong> ${product.brand} | <strong>Категория:</strong> ${product.category}</p>
+        <div class="price">${product.price > 0 ? product.price + ' ' + product.currency : 'Запрос цены / Бронирование'}</div>
+        <p>${product.description}</p>
+
+        <div class="specs">
+          <h3>Характеристики и условия:</h3>
+          <table>
+            ${Object.entries(product.specs).map(([key, val]) => `
+              <tr>
+                <td>${key}:</td>
+                <td><strong>${val}</strong></td>
+              </tr>
+            `).join('')}
+          </table>
+        </div>
+
+        <button class="btn-buy" onclick="alert('Спасибо за заказ! Наш менеджер свяжется с вами в течение 15 минут.')">
+          Заказать / Оформить в Баку
+        </button>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+// 3. Динамический Sitemap для ИИ и Поисковиков
+app.get('/sitemap.xml', (req, res) => {
+  const host = req.get('host');
+  const protocol = req.protocol;
+
+  const urls = products.map(p => `
+    <url>
+      <loc>${protocol}://${host}/product/${p.id}</loc>
+      <changefreq>daily</changefreq>
+      <priority>0.8</priority>
+    </url>
+  `).join('');
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+      <loc>${protocol}://${host}/</loc>
+      <changefreq>daily</changefreq>
+      <priority>1.0</priority>
+    </url>
+    ${urls}
+  </urlset>`;
+
+  res.header('Content-Type', 'application/xml');
+  res.send(sitemap);
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`[INFO] Сервер успешно запущен на порту ${PORT}`);
 });

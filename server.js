@@ -209,6 +209,16 @@ app.get('/product/:id', (req, res) => {
         .specs td:first-child { font-weight: 500; color: #64748b; }
         .btn-buy { background: #059669; color: white; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; }
         .btn-buy:hover { background: #047857; }
+        
+        /* Modal Styles */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 400px; width: 90%; }
+        .modal h3 { margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .btn-submit { background: #2563eb; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-close { background: #e5e7eb; border: none; padding: 8px; width: 100%; border-radius: 6px; margin-top: 10px; cursor: pointer; }
       </style>
     </head>
     <body>
@@ -231,13 +241,74 @@ app.get('/product/:id', (req, res) => {
           </table>
         </div>
 
-        <button class="btn-buy" onclick="alert('Спасибо за заказ! Наш менеджер свяжется с вами в течение 15 минут.')">
-          Заказать / Оформить в Баку
-        </button>
+        <button class="btn-buy" onclick="openModal()">Заказать / Оформить в Баку</button>
       </div>
+
+      <!-- Modal Form -->
+      <div id="orderModal" class="modal">
+        <div class="modal-content">
+          <h3>Оформление заявки</h3>
+          <p style="font-size: 0.9rem; color: #666;">Укажите контактные данные для подтверждения заказа в Баку</p>
+          <form id="orderForm">
+            <div class="form-group">
+              <label>Ваше имя</label>
+              <input type="text" id="custName" required placeholder="Например, Рауф">
+            </div>
+            <div class="form-group">
+              <label>Номер телефона / WhatsApp</label>
+              <input type="tel" id="custPhone" required placeholder="+994 50 000 00 00">
+            </div>
+            <button type="submit" class="btn-submit">Подтвердить заказ</button>
+            <button type="button" class="btn-close" onclick="closeModal()">Отмена</button>
+          </form>
+        </div>
+      </div>
+
+      <script>
+        function openModal() { document.getElementById('orderModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('orderModal').style.display = 'none'; }
+
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const name = document.getElementById('custName').value;
+          const phone = document.getElementById('custPhone').value;
+
+          const res = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              productName: "${product.name}",
+              productPrice: "${product.price} ${product.currency}",
+              custName: name,
+              custPhone: phone
+            })
+          });
+
+          if (res.ok) {
+            alert('Спасибо за заявку! Наш менеджер свяжется с вами в течение 15 минут.');
+            closeModal();
+          } else {
+            alert('Ошибка отправки. Попробуйте снова.');
+          }
+        });
+      </script>
     </body>
     </html>
   `);
+});
+
+// Обработчик заказа (Отправка Лида в Telegram)
+app.post('/api/order', (req, res) => {
+  const { productName, productPrice, custName, custPhone } = req.body;
+
+  const msg = `🛒 <b>НОВАЯ ЗАЯВКА НА ТОВАР!</b>\n\n` +
+              `<b>Товар:</b> ${productName}\n` +
+              `<b>Цена:</b> ${productPrice}\n` +
+              `<b>Клиент:</b> ${custName}\n` +
+              `<b>Телефон:</b> <code>${custPhone}</code>`;
+
+  sendTelegramAlert(msg);
+  res.json({ success: true });
 });
 
 // 3. Динамический Sitemap для ИИ и Поисковиков

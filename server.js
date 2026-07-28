@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -56,21 +56,40 @@ app.use((req, res, next) => {
   next();
 });
 
-// Функция отправки сообщений в Telegram
-async function sendTelegramAlert(text) {
+// Функция отправки сообщений в Telegram через встроенную библиотеку https
+function sendTelegramAlert(text) {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.log('[LOG] Telegram-уведомление не отправлено.');
+    console.log('[LOG] Telegram-уведомление не отправлено (нет токена).');
     return;
   }
-  try {
-    await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      chat_id: TELEGRAM_CHAT_ID,
-      text: text,
-      parse_mode: 'HTML'
-    });
-  } catch (err) {
+
+  const payload = JSON.stringify({
+    chat_id: TELEGRAM_CHAT_ID,
+    text: text,
+    parse_mode: 'HTML'
+  });
+
+  const options = {
+    hostname: 'api.telegram.org',
+    port: 443,
+    path: `/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload)
+    }
+  };
+
+  const req = https.request(options, (res) => {
+    res.on('data', () => {});
+  });
+
+  req.on('error', (err) => {
     console.error('[ERROR] Ошибка отправки в Telegram:', err.message);
-  }
+  });
+
+  req.write(payload);
+  req.end();
 }
 
 // 1. Главная страница — Каталог товаров

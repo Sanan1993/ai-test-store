@@ -56,7 +56,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Функция отправки сообщений в Telegram через https
+// Функция отправки сообщений в Telegram
 function sendTelegramAlert(text) {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
     console.log('[LOG] Telegram-уведомление не отправлено.');
@@ -161,7 +161,7 @@ app.get('/', (req, res) => {
                 <p style="font-size: 0.9rem; color: #555;">${p.description.substring(0, 90)}...</p>
               </div>
               <div>
-                <div class="price">${p.price > 0 ? p.price + ' ' + p.currency : 'Бесплатно / Заказ'}</div>
+                <div class="price">${p.price > 0 ? p.price + ' ' + p.currency : 'Запрос цены / Бронь'}</div>
                 <a href="/product/${p.id}" class="btn">Посмотреть товар</a>
               </div>
             </div>
@@ -209,16 +209,7 @@ app.get('/product/:id', (req, res) => {
         .specs td:first-child { font-weight: 500; color: #64748b; }
         .btn-buy { background: #059669; color: white; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; }
         .btn-buy:hover { background: #047857; }
-        
-        /* Modal Styles */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 400px; width: 90%; }
-        .modal h3 { margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .btn-submit { background: #2563eb; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-close { background: #e5e7eb; border: none; padding: 8px; width: 100%; border-radius: 6px; margin-top: 10px; cursor: pointer; }
+        .status-box { display: none; margin-top: 15px; padding: 12px; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; border-radius: 8px; text-align: center; font-weight: 500; }
       </style>
     </head>
     <body>
@@ -241,71 +232,45 @@ app.get('/product/:id', (req, res) => {
           </table>
         </div>
 
-        <button class="btn-buy" onclick="openModal()">Заказать / Оформить в Баку</button>
-      </div>
-
-      <!-- Modal Form -->
-      <div id="orderModal" class="modal">
-        <div class="modal-content">
-          <h3>Оформление заявки</h3>
-          <p style="font-size: 0.9rem; color: #666;">Укажите контактные данные для подтверждения заказа в Баку</p>
-          <form id="orderForm">
-            <div class="form-group">
-              <label>Ваше имя</label>
-              <input type="text" id="custName" required placeholder="Например, Рауф">
-            </div>
-            <div class="form-group">
-              <label>Номер телефона / WhatsApp</label>
-              <input type="tel" id="custPhone" required placeholder="+994 50 000 00 00">
-            </div>
-            <button type="submit" class="btn-submit">Подтвердить заказ</button>
-            <button type="button" class="btn-close" onclick="closeModal()">Отмена</button>
-          </form>
-        </div>
+        <button class="btn-buy" id="clickBtn" onclick="trackClick()">Проверить наличие / Заказать</button>
+        <div id="statusBox" class="status-box">✅ Товар в наличии! Запрос на бронирование отправлен.</div>
       </div>
 
       <script>
-        function openModal() { document.getElementById('orderModal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('orderModal').style.display = 'none'; }
+        async function trackClick() {
+          const btn = document.getElementById('clickBtn');
+          const box = document.getElementById('statusBox');
+          btn.style.opacity = '0.5';
+          btn.disabled = true;
 
-        document.getElementById('orderForm').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const name = document.getElementById('custName').value;
-          const phone = document.getElementById('custPhone').value;
-
-          const res = await fetch('/api/order', {
+          await fetch('/api/click', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               productName: "${product.name}",
-              productPrice: "${product.price} ${product.currency}",
-              custName: name,
-              custPhone: phone
+              productPrice: "${product.price} ${product.currency}"
             })
           });
 
-          if (res.ok) {
-            alert('Спасибо за заявку! Наш менеджер свяжется с вами в течение 15 минут.');
-            closeModal();
-          } else {
-            alert('Ошибка отправки. Попробуйте снова.');
-          }
-        });
+          box.style.display = 'block';
+        }
       </script>
     </body>
     </html>
   `);
 });
 
-// Обработчик заказа (Отправка Лида в Telegram)
-app.post('/api/order', (req, res) => {
-  const { productName, productPrice, custName, custPhone } = req.body;
+// Фиксация целевого клика пользователя
+app.post('/api/click', (req, res) => {
+  const { productName, productPrice } = req.body;
+  const userAgent = req.get('User-Agent') || '';
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-  const msg = `🛒 <b>НОВАЯ ЗАЯВКА НА ТОВАР!</b>\n\n` +
+  const msg = `🔥 <b>ЖИВОЙ КЛИК ПОКУПАТЕЛЯ!</b>\n\n` +
               `<b>Товар:</b> ${productName}\n` +
               `<b>Цена:</b> ${productPrice}\n` +
-              `<b>Клиент:</b> ${custName}\n` +
-              `<b>Телефон:</b> <code>${custPhone}</code>`;
+              `<b>IP:</b> ${ip}\n` +
+              `<b>User-Agent:</b> <code>${userAgent}</code>`;
 
   sendTelegramAlert(msg);
   res.json({ success: true });

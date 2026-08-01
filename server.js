@@ -5,9 +5,9 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Конфигурация Telegram с твоими токенами
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '7572733989:AAG8e7K4oHBy6a8aOQ32-pZTh-5a6Y4a3yM';
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '180290518';
+// Конфигурация Telegram с ТВОИМИ реальными токенами
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8';
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '596455016';
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -75,6 +75,15 @@ app.get('/sitemap.xml', (req, res) => {
 // 2. ГЛАВНАЯ СТРАНИЦА (КАТАЛОГ)
 // -------------------------------------------------------------
 app.get('/', (req, res) => {
+  const userAgent = req.headers['user-agent'] || 'Unknown';
+  const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+  const text = `🏠 <b>ПРОСМОТР ГЛАВНОЙ СТРАНИЦЫ (КАТАЛОГ)!</b>\n\n` +
+               `<b>User-Agent:</b> <code>${userAgent}</code>\n` +
+               `<b>IP:</b> <code>${userIp}</code>`;
+  
+  sendTelegramMessage(text);
+
   const products = getProducts();
   
   let html = `
@@ -127,17 +136,10 @@ app.get('/', (req, res) => {
 });
 
 // -------------------------------------------------------------
-// 3. СТРАНИЦА ТОВАРА + ТРЕКИНГ ПРОСМОТРОВ
+// 3. СТРАНИЦА ТОВАРА + УМНЫЙ ПОИСК + ТРЕКИНГ
 // -------------------------------------------------------------
 app.get('/product/:id', (req, res) => {
-  const productId = parseInt(req.params.id);
-  const products = getProducts();
-  const product = products.find(p => p.id === productId);
-
-  if (!product) {
-    return res.status(404).send('Товар не найден');
-  }
-
+  const param = req.params.id;
   const userAgent = req.headers['user-agent'] || 'Unknown';
   const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
@@ -153,15 +155,49 @@ app.get('/product/:id', (req, res) => {
     visitorType = '🔍 Googlebot';
   }
 
-  // Отправка в Telegram уведомления О ПРОСМОТРЕ СТРАНИЦЫ
-  const viewText = `👀 <b>НОВЫЙ ПРОСМОТР СТРАНИЦЫ!</b>\n\n` +
+  // СРАЗУ отправляем уведомление в Telegram (не дожидаясь поиска товара)
+  const viewText = `👀 <b>НОВЫЙ ПРОСМОТР СТРАНИЦЫ ТОВАРА!</b>\n\n` +
+                   `<b>Запрошен URL:</b> <code>/product/${param}</code>\n` +
                    `<b>Тип:</b> ${visitorType}\n` +
-                   `<b>Товар:</b> ${product.name}\n` +
-                   `<b>Цена:</b> ${product.price} ₼\n` +
                    `<b>User-Agent:</b> <code>${userAgent}</code>\n` +
                    `<b>IP:</b> <code>${userIp}</code>`;
 
   sendTelegramMessage(viewText);
+
+  const products = getProducts();
+  
+  // Ищем товар сначала по числовому ID, затем по текстовому слагу
+  let product = products.find(p => p.id === parseInt(param));
+  if (!product) {
+    const cleanParam = param.toLowerCase().replace(/-/g, ' ');
+    product = products.find(p => cleanParam.includes(p.name.toLowerCase().split(' ')[0]));
+  }
+
+  // Если товар совсем не найден — отдаём страницу с возвратом в каталог
+  if (!product) {
+    return res.status(404).send(`
+      <!DOCTYPE html>
+      <html lang="ru">
+      <head>
+        <meta charset="UTF-8">
+        <title>Товар временно недоступен</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: sans-serif; background: #f4f5f7; text-align: center; padding: 50px 20px; }
+          .card { max-width: 500px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+          a { display: inline-block; margin-top: 20px; background: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h2>Товар обновляется или находится на переоценке</h2>
+          <p>Мы обновляем информацию о данном товаре на складе в Баку.</p>
+          <a href="/">Перейти в полный каталог</a>
+        </div>
+      </body>
+      </html>
+    `);
+  }
 
   // Формирование JSON-LD микроразметки Schema.org
   const schemaJson = {

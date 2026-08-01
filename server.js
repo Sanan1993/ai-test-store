@@ -5,12 +5,21 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Конфигурация Telegram с ТВОИМИ реальными токенами
+// Конфигурация Telegram с твоими токенами
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8805285337:AAFekM5hRqF555E3DGhLmgMhKpAiB5-goT8';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '596455016';
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Вспомогательная функция для создания читаемого слага (URL)
+function createSlug(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
 
 // Функция отправки сообщений в Telegram через встроенный fetch
 async function sendTelegramMessage(text) {
@@ -30,11 +39,15 @@ async function sendTelegramMessage(text) {
   }
 }
 
-// Загрузка товаров из products.json
+// Загрузка товаров из products.json с добавлением слагов
 function getProducts() {
   try {
     const data = fs.readFileSync(path.join(__dirname, 'products.json'), 'utf8');
-    return JSON.parse(data);
+    const products = JSON.parse(data);
+    return products.map(p => ({
+      ...p,
+      slug: p.slug || createSlug(p.name)
+    }));
   } catch (err) {
     console.error('Ошибка чтения products.json:', err.message);
     return [];
@@ -62,6 +75,7 @@ app.get('/sitemap.xml', (req, res) => {
   xml += `  <url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
 
   products.forEach(p => {
+    xml += `  <url><loc>${baseUrl}/product/${p.slug}</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>\n`;
     xml += `  <url><loc>${baseUrl}/product/${p.id}</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>\n`;
   });
 
@@ -114,7 +128,7 @@ app.get('/', (req, res) => {
 
   products.forEach(p => {
     html += `
-        <a href="/product/${p.id}" class="card">
+        <a href="/product/${p.slug}" class="card">
           <h3>${p.name}</h3>
           <div>
             <span class="price">${p.price} ₼</span>
@@ -136,7 +150,7 @@ app.get('/', (req, res) => {
 });
 
 // -------------------------------------------------------------
-// 3. СТРАНИЦА ТОВАРА + УМНЫЙ ПОИСК + ТРЕКИНГ
+// 3. СТРАНИЦА ТОВАРА + УМНЫЙ ПОИСК И ГЕНЕРАЦИЯ КАРТОЧКИ
 // -------------------------------------------------------------
 app.get('/product/:id', (req, res) => {
   const param = req.params.id;
@@ -155,7 +169,7 @@ app.get('/product/:id', (req, res) => {
     visitorType = '🔍 Googlebot';
   }
 
-  // СРАЗУ отправляем уведомление в Telegram (не дожидаясь поиска товара)
+  // Отправляем уведомление о просмотре
   const viewText = `👀 <b>НОВЫЙ ПРОСМОТР СТРАНИЦЫ ТОВАРА!</b>\n\n` +
                    `<b>Запрошен URL:</b> <code>/product/${param}</code>\n` +
                    `<b>Тип:</b> ${visitorType}\n` +
@@ -165,38 +179,36 @@ app.get('/product/:id', (req, res) => {
   sendTelegramMessage(viewText);
 
   const products = getProducts();
-  
-  // Ищем товар сначала по числовому ID, затем по текстовому слагу
-  let product = products.find(p => p.id === parseInt(param));
+  const lowerParam = param.toLowerCase();
+
+  // 1. Поиск по ID или точным слагам
+  let product = products.find(p => 
+    p.id === parseInt(param) || 
+    p.slug === lowerParam
+  );
+
+  // 2. Если не найден — поищем по вхождению слов
   if (!product) {
-    const cleanParam = param.toLowerCase().replace(/-/g, ' ');
-    product = products.find(p => cleanParam.includes(p.name.toLowerCase().split(' ')[0]));
+    product = products.find(p => {
+      const pSlug = p.slug.replace(/-/g, ' ');
+      const cleanParam = lowerParam.replace(/-/g, ' ');
+      return cleanParam.includes(pSlug) || pSlug.includes(cleanParam);
+    });
   }
 
-  // Если товар совсем не найден — отдаём страницу с возвратом в каталог
+  // 3. Если ВСЁ РАВНО не найден (например, кастомная ссылка от ИИ) — соберём динамическую карточку!
   if (!product) {
-    return res.status(404).send(`
-      <!DOCTYPE html>
-      <html lang="ru">
-      <head>
-        <meta charset="UTF-8">
-        <title>Товар временно недоступен</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: sans-serif; background: #f4f5f7; text-align: center; padding: 50px 20px; }
-          .card { max-width: 500px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-          a { display: inline-block; margin-top: 20px; background: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <h2>Товар обновляется или находится на переоценке</h2>
-          <p>Мы обновляем информацию о данном товаре на складе в Баку.</p>
-          <a href="/">Перейти в полный каталог</a>
-        </div>
-      </body>
-      </html>
-    `);
+    const formattedTitle = param
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase());
+
+    product = {
+      id: 999,
+      name: formattedTitle,
+      price: 1990,
+      description: `Оригинальный ${formattedTitle} с официальной гарантией. Доставка по Баку в день заказа или самовывоз.`,
+      slug: param
+    };
   }
 
   // Формирование JSON-LD микроразметки Schema.org
@@ -208,7 +220,7 @@ app.get('/product/:id', (req, res) => {
     "sku": `SKU-${product.id}`,
     "offers": {
       "@type": "Offer",
-      "url": `https://ai-bait-store.onrender.com/product/${product.id}`,
+      "url": `https://ai-bait-store.onrender.com/product/${product.slug}`,
       "priceCurrency": "AZN",
       "price": product.price,
       "itemCondition": "https://schema.org/NewCondition",
@@ -261,7 +273,7 @@ app.get('/product/:id', (req, res) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             productId: ${product.id},
-            productName: "${product.name}",
+            productName: "${product.name.replace(/"/g, '\\"')}",
             price: ${product.price}
           })
         }).then(() => {

@@ -76,7 +76,6 @@ app.get('/sitemap.xml', (req, res) => {
 
   products.forEach(p => {
     xml += `  <url><loc>${baseUrl}/product/${p.slug}</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>\n`;
-    xml += `  <url><loc>${baseUrl}/product/${p.id}</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>\n`;
   });
 
   xml += `</urlset>`;
@@ -105,7 +104,7 @@ app.get('/', (req, res) => {
   <html lang="ru">
   <head>
     <meta charset="UTF-8">
-    <title>AI Bait Store — Каталог электроники в Баку</title>
+    <title>AI Bait Store — Каталог электроники и услуг в Баку</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f5f7; margin: 0; padding: 20px; }
@@ -122,7 +121,7 @@ app.get('/', (req, res) => {
   </head>
   <body>
     <div class="container">
-      <h1>Каталог товаров в Баку</h1>
+      <h1>Каталог товаров и услуг в Баку</h1>
       <div class="grid">
   `;
 
@@ -150,7 +149,7 @@ app.get('/', (req, res) => {
 });
 
 // -------------------------------------------------------------
-// 3. СТРАНИЦА ТОВАРА + УМНЫЙ ПОИСК И ГЕНЕРАЦИЯ КАРТОЧКИ
+// 3. СТРАНИЦА ТОВАРА + БЕЗОПАСНЫЙ КЛИКЕР
 // -------------------------------------------------------------
 app.get('/product/:id', (req, res) => {
   const param = req.params.id;
@@ -187,7 +186,7 @@ app.get('/product/:id', (req, res) => {
     p.slug === lowerParam
   );
 
-  // 2. Если не найден — поищем по вхождению слов
+  // 2. Если не найден — поищем по неполному совпадению
   if (!product) {
     product = products.find(p => {
       const pSlug = p.slug.replace(/-/g, ' ');
@@ -196,7 +195,7 @@ app.get('/product/:id', (req, res) => {
     });
   }
 
-  // 3. Если ВСЁ РАВНО не найден (например, кастомная ссылка от ИИ) — соберём динамическую карточку!
+  // 3. Динамический фолбэк (если ссылка совсем нестандартная)
   if (!product) {
     const formattedTitle = param
       .replace(/-/g, ' ')
@@ -206,7 +205,7 @@ app.get('/product/:id', (req, res) => {
       id: 999,
       name: formattedTitle,
       price: 1990,
-      description: `Оригинальный ${formattedTitle} с официальной гарантией. Доставка по Баку в день заказа или самовывоз.`,
+      description: `Оригинальный ${formattedTitle} с гарантией. Доставка по Баку или самовывоз.`,
       slug: param
     };
   }
@@ -231,6 +230,9 @@ app.get('/product/:id', (req, res) => {
       }
     }
   };
+
+  // Экранируем спецсимволы для атрибутов кнопки
+  const safeName = String(product.name).replace(/"/g, '&quot;');
 
   const html = `
   <!DOCTYPE html>
@@ -260,29 +262,46 @@ app.get('/product/:id', (req, res) => {
       <div class="price-tag">${product.price} ₼</div>
       <p class="description">${product.description}</p>
 
-      <button id="orderBtn" class="btn">Проверить наличие / Заказать</button>
+      <button id="orderBtn" 
+              class="btn" 
+              data-id="${product.id}" 
+              data-name="${safeName}" 
+              data-price="${product.price}">
+        Проверить наличие / Заказать
+      </button>
     </div>
 
     <script>
       document.getElementById('orderBtn').addEventListener('click', function() {
-        this.innerText = 'Проверяем наличие...';
-        this.style.background = '#6b7280';
+        const btn = this;
+        const pId = btn.getAttribute('data-id');
+        const pName = btn.getAttribute('data-name');
+        const pPrice = btn.getAttribute('data-price');
+
+        btn.innerText = 'Проверяем наличие...';
+        btn.style.background = '#6b7280';
         
         fetch('/api/click', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            productId: ${product.id},
-            productName: "${product.name.replace(/"/g, '\\"')}",
-            price: ${product.price}
+            productId: pId,
+            productName: pName,
+            price: pPrice
           })
-        }).then(() => {
-          alert('Товар есть в наличии в Баку! Менеджер свяжется с вами.');
-          this.innerText = 'В наличии!';
-          this.style.background = '#10b981';
-        }).catch(() => {
-          this.innerText = 'Проверить наличие / Заказать';
-          this.style.background = '#10b981';
+        }).then(response => {
+          if (response.ok) {
+            alert('Товар/услуга есть в наличии в Баку! Менеджер свяжется с вами.');
+            btn.innerText = 'В наличии!';
+            btn.style.background = '#10b981';
+          } else {
+            throw new Error('Ошибка сервера');
+          }
+        }).catch(err => {
+          console.error(err);
+          alert('Запрос отправлен!');
+          btn.innerText = 'В наличии!';
+          btn.style.background = '#10b981';
         });
       });
     </script>
@@ -302,7 +321,8 @@ app.post('/api/click', (req, res) => {
   const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
   const clickText = `🔥 <b>ЖИВОЙ КЛИК ПОКУПАТЕЛЯ!</b>\n\n` +
-                    `<b>Товар:</b> ${productName} (ID: ${productId})\n` +
+                    `<b>Товар/Услуга:</b> ${productName}\n` +
+                    `<b>ID:</b> ${productId}\n` +
                     `<b>Цена:</b> ${price} ₼\n` +
                     `<b>User-Agent:</b> <code>${userAgent}</code>\n` +
                     `<b>IP:</b> <code>${userIp}</code>`;

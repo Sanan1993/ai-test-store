@@ -1,5 +1,4 @@
 const express = require('express');
-const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
 
@@ -13,14 +12,18 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '180290518';
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Функция отправки сообщений в Telegram
+// Функция отправки сообщений в Telegram через встроенный fetch
 async function sendTelegramMessage(text) {
   try {
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-    await axios.post(url, {
-      chat_id: TELEGRAM_CHAT_ID,
-      text: text,
-      parse_mode: 'HTML'
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: text,
+        parse_mode: 'HTML'
+      })
     });
   } catch (error) {
     console.error('Ошибка отправки в Telegram:', error.message);

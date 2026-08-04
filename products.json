@@ -2,8 +2,8 @@
   {
     "id": 1,
     "name": "Apple iPhone 16 Pro 128GB (Black Titanium)",
-    "price": 1480,
-    "oldPrice": 1650,
+    "price": 1990,
+    "oldPrice": 2450,
     "description": "Оригинальный Apple iPhone 16 Pro 128GB Black Titanium. Официальная гарантия 1 год. Новые запечатанные телефоны в Баку. Быстрая доставка по городу.",
     "slug": "iphone-16-pro-128gb-black-titanium-baku"
   },
@@ -11,14 +11,14 @@
     "id": 2,
     "name": "Sony PlayStation 5 Slim 1TB (Disc Edition)",
     "price": 1090,
-    "oldPrice": 1250,
+    "oldPrice": 1350,
     "description": "Игровая приставка Sony PlayStation 5 Slim 1TB с дисководом (CFI-2000). Новая в упаковке, 1 геймпад DualSense в комплекте. Наличие в Баку.",
     "slug": "sony-playstation-5-slim-1tb-baku"
   },
   {
     "id": 3,
     "name": "Apple AirPods Pro 2 (USB-C Case)",
-    "price": 380,
+    "price": 350,
     "oldPrice": 450,
     "description": "Беспроводные наушники Apple AirPods Pro 2 с разъемом Type-C и активным шумоподавлением (ANC). Оригинал, новые в плёнке. Доставка по Баку.",
     "slug": "apple-airpods-pro-2-usb-c-baku"
@@ -26,7 +26,7 @@
   {
     "id": 4,
     "name": "Мультистайлер Dyson Airwrap Complete Long",
-    "price": 1090,
+    "price": 890,
     "oldPrice": 1290,
     "description": "Оригинальный мультистайлер Dyson Airwrap Complete Long для волос. Полная комплектация с насадками и чехлом. Евровилка, оригинал 100%.",
     "slug": "dyson-airwrap-complete-long-baku"

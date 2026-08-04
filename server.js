@@ -60,7 +60,7 @@ app.get('/sitemap.xml', (req, res) => {
   sendTelegramMessage(`🗺️ <b>СКАНИРОВАНИЕ SITEMAP.XML!</b>\n\n<b>User-Agent:</b> <code>${userAgent}</code>\n<b>IP:</b> <code>${userIp}</code>`);
 
   const products = getProducts();
-  const baseUrl = 'https://ai-bait-store.onrender.com';
+  const baseUrl = 'https://baku-electro.onrender.com';
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
   xml += `  <url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
@@ -227,7 +227,7 @@ app.get('/product/:id', (req, res) => {
     "sku": `SKU-${product.id}`,
     "offers": {
       "@type": "Offer",
-      "url": `https://ai-bait-store.onrender.com/product/${product.slug}`,
+      "url": `https://baku-electro.onrender.com/product/${product.slug}`,
       "priceCurrency": "AZN",
       "price": product.price,
       "itemCondition": "https://schema.org/NewCondition",

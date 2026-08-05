@@ -3,40 +3,36 @@
     "id": 1,
     "name": "Apple iPhone 16 Pro 128GB (Black Titanium)",
     "price": 1990,
-    "oldPrice": 2450,
-    "description": "Оригинальный Apple iPhone 16 Pro 128GB Black Titanium. Официальная гарантия 1 год. Новые запечатанные телефоны в Баку. Быстрая доставка по городу.",
+    "oldPrice": 2200,
+    "image": "https://m.media-amazon.com/images/I/61f4ebvA9+L._AC_SL1500_.jpg",
+    "description": "Orijinal Apple iPhone 16 Pro 128GB Black Titanium. 1 il rəsmi zəmanət. Bakı üzrə 45 dəqiqəyə pulsuz çatdırılma. Qapıda ödəniş.",
     "slug": "iphone-16-pro-128gb-black-titanium-baku"
   },
   {
     "id": 2,
     "name": "Sony PlayStation 5 Slim 1TB (Disc Edition)",
     "price": 1090,
-    "oldPrice": 1350,
-    "description": "Игровая приставка Sony PlayStation 5 Slim 1TB с дисководом (CFI-2000). Новая в упаковке, 1 геймпад DualSense в комплекте. Наличие в Баку.",
+    "oldPrice": 1250,
+    "image": "https://m.media-amazon.com/images/I/51051FiD91L._SL1000_.jpg",
+    "description": "Yeni Sony PlayStation 5 Slim 1TB disqli versiya (CFI-2000). Bağlı qutuda, 1 ədəd DualSense geympad ilə. 1 il zəmanət və pulsuz çatdırılma.",
     "slug": "sony-playstation-5-slim-1tb-baku"
   },
   {
     "id": 3,
     "name": "Apple AirPods Pro 2 (USB-C Case)",
     "price": 350,
-    "oldPrice": 450,
-    "description": "Беспроводные наушники Apple AirPods Pro 2 с разъемом Type-C и активным шумоподавлением (ANC). Оригинал, новые в плёнке. Доставка по Баку.",
+    "oldPrice": 420,
+    "image": "https://m.media-amazon.com/images/I/61SUj2aKoEL._AC_SL1500_.jpg",
+    "description": "Orijinal Apple AirPods Pro 2 Type-C korpus ilə. Aktiv küyboğma (ANC). Bağlı qutuda, rəsmi zəmanətli. Bakı üzrə sürətli çatdırılma.",
     "slug": "apple-airpods-pro-2-usb-c-baku"
   },
   {
     "id": 4,
     "name": "Мультистайлер Dyson Airwrap Complete Long",
     "price": 890,
-    "oldPrice": 1290,
-    "description": "Оригинальный мультистайлер Dyson Airwrap Complete Long для волос. Полная комплектация с насадками и чехлом. Евровилка, оригинал 100%.",
+    "oldPrice": 1150,
+    "image": "https://m.media-amazon.com/images/I/51w3m1oJOnL._SL1200_.jpg",
+    "description": "Orijinal Dyson Airwrap Complete Long saç stayleri. Bütün başlıklar və çanta dəstə daxildir. 100% orijinal, rəsmi zəmanət.",
     "slug": "dyson-airwrap-complete-long-baku"
-  },
-  {
-    "id": 5,
-    "name": "Apple MacBook Air 13 M3 (8GB / 256GB SSD)",
-    "price": 1890,
-    "oldPrice": 2150,
-    "description": "Ультрабук Apple MacBook Air 13 дюймов на чипе M3 (2024). 8GB RAM, 256GB SSD. Клавиатура с подсветкой, гарантия. В наличии в Баку.",
-    "slug": "apple-macbook-air-13-m3-baku"
   }
 ]

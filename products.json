@@ -4,7 +4,7 @@
     "name": "Apple iPhone 16 Pro 128GB (Black Titanium)",
     "price": 1990,
     "oldPrice": 2200,
-    "image": "https://m.media-amazon.com/images/I/61f4ebvA9+L._AC_SL1500_.jpg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/IPhone_15_Pro_Natural_Titanium.png/600px-IPhone_15_Pro_Natural_Titanium.png",
     "description": "Orijinal Apple iPhone 16 Pro 128GB Black Titanium. 1 il rəsmi zəmanət. Bakı üzrə 45 dəqiqəyə pulsuz çatdırılma. Qapıda ödəniş.",
     "slug": "iphone-16-pro-128gb-black-titanium-baku"
   },
@@ -13,7 +13,7 @@
     "name": "Sony PlayStation 5 Slim 1TB (Disc Edition)",
     "price": 1090,
     "oldPrice": 1250,
-    "image": "https://m.media-amazon.com/images/I/51051FiD91L._SL1000_.jpg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/PlayStation_5_and_DualSense_with_transparent_background.png/600px-PlayStation_5_and_DualSense_with_transparent_background.png",
     "description": "Yeni Sony PlayStation 5 Slim 1TB disqli versiya (CFI-2000). Bağlı qutuda, 1 ədəd DualSense geympad ilə. 1 il zəmanət və pulsuz çatdırılma.",
     "slug": "sony-playstation-5-slim-1tb-baku"
   },
@@ -22,17 +22,71 @@
     "name": "Apple AirPods Pro 2 (USB-C Case)",
     "price": 350,
     "oldPrice": 420,
-    "image": "https://m.media-amazon.com/images/I/61SUj2aKoEL._AC_SL1500_.jpg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/AirPods_Pro_%282nd_generation%29.png/600px-AirPods_Pro_%282nd_generation%29.png",
     "description": "Orijinal Apple AirPods Pro 2 Type-C korpus ilə. Aktiv küyboğma (ANC). Bağlı qutuda, rəsmi zəmanətli. Bakı üzrə sürətli çatdırılma.",
     "slug": "apple-airpods-pro-2-usb-c-baku"
   },
   {
     "id": 4,
-    "name": "Мультистайлер Dyson Airwrap Complete Long",
+    "name": "Dyson Airwrap Complete Long (Strawberry Bronze)",
     "price": 890,
     "oldPrice": 1150,
-    "image": "https://m.media-amazon.com/images/I/51w3m1oJOnL._SL1200_.jpg",
+    "image": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop",
     "description": "Orijinal Dyson Airwrap Complete Long saç stayleri. Bütün başlıklar və çanta dəstə daxildir. 100% orijinal, rəsmi zəmanət.",
     "slug": "dyson-airwrap-complete-long-baku"
+  },
+  {
+    "id": 5,
+    "name": "Apple MacBook Air 13 M3 (8GB / 256GB SSD)",
+    "price": 1890,
+    "oldPrice": 2150,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/MacBook_Air_M2_Midnight.png/600px-MacBook_Air_M2_Midnight.png",
+    "description": "Apple MacBook Air 13 düym M3 çip (2024). 8GB RAM, 256GB SSD. İşıqlı klaviatura, 1 il rəsmi zəmanət. Bakıda stokda.",
+    "slug": "apple-macbook-air-13-m3-baku"
+  },
+  {
+    "id": 6,
+    "name": "Samsung Galaxy S24 Ultra 12GB / 256GB",
+    "price": 1850,
+    "oldPrice": 2100,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Samsung_Galaxy_S24_Ultra.png/600px-Samsung_Galaxy_S24_Ultra.png",
+    "description": "Orijinal Samsung Galaxy S24 Ultra Titanium Gray. Galaxy AI dəstəyi, S-Pen flaqman smartfon. 1 il rəsmi zəmanət.",
+    "slug": "samsung-galaxy-s24-ultra-baku"
+  },
+  {
+    "id": 7,
+    "name": "Apple Watch Series 9 GPS 45mm Midnight",
+    "price": 720,
+    "oldPrice": 850,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Apple_Watch_Series_9.png/600px-Apple_Watch_Series_9.png",
+    "description": "Apple Watch Series 9 45mm alüminium korpus. Double Tap jestləri və S9 çip. 1 il rəsmi zəmanət və pulsuz çatdırılma.",
+    "slug": "apple-watch-series-9-45mm-baku"
+  },
+  {
+    "id": 8,
+    "name": "Marshall Major IV Wireless Black",
+    "price": 240,
+    "oldPrice": 310,
+    "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop",
+    "description": "Orijinal Marshall Major IV naqilsiz qulaqlıqlar. 80 saatdan çox avtonom iş vaxtı, kabelsiz şarj dəstəyi. Bakı üzrə çatdırılma.",
+    "slug": "marshall-major-iv-wireless-baku"
+  },
+  {
+    "id": 9,
+    "name": "Xiaomi Robot Vacuum S10+ Robot Tozsoran",
+    "price": 620,
+    "oldPrice": 780,
+    "image": "https://images.unsplash.com/photo-1625948515291-696130d46b99?w=600&auto=format&fit=crop",
+    "description": "Xiaomi Robot Vacuum S10+ ağıllı robot tozsoran. Lazer naviqasiya və nəm təmizləmə. Eviniz üçün ideal köməkçi.",
+    "slug": "xiaomi-robot-vacuum-s10-plus-baku"
+  },
+  {
+    "id": 10,
+    "name": "Apple iPad Air 11 M2 (128GB Wi-Fi Space Gray)",
+    "price": 1150,
+    "oldPrice": 1320,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/IPad_Air_2022.png/600px-IPad_Air_2022.png",
+    "description": "Yeni Apple iPad Air 11 düym M2 çip ilə. 128GB yaddaş, Liquid Retina ekran. Təhsil və iş üçün mükəmməl planşet.",
+    "slug": "apple-ipad-air-11-m2-baku"
   }
 ]

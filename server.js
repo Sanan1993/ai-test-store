@@ -69,17 +69,22 @@ app.get('/sitemap.xml', (req, res) => {
 });
 
 // -------------------------------------------------------------
-// 2. ГЛАВНАЯ СТРАНИЦА (КАТАЛОГ)
+// 2. ГЛАВНАЯ СТРАНИЦА (КАТАЛОГ С ПАГИНАЦИЕЙ)
 // -------------------------------------------------------------
 app.get('/', (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = 6;
   const userAgent = req.headers['user-agent'] || 'Unknown';
   const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
   if (!userAgent.includes('facebookexternalhit')) {
-    sendTelegramMessage(`🏠 <b>ПРОСМОТР ГЛАВНОЙ СТРАНИЦЫ!</b>\n\n<b>User-Agent:</b> <code>${userAgent}</code>\n<b>IP:</b> <code>${userIp}</code>`);
+    sendTelegramMessage(`🏠 <b>ПРОСМОТР КАТАЛОГА (Стр. ${page})!</b>\n\n<b>User-Agent:</b> <code>${userAgent}</code>\n<b>IP:</b> <code>${userIp}</code>`);
   }
 
-  const products = getProducts();
+  const allProducts = getProducts();
+  const totalPages = Math.ceil(allProducts.length / limit);
+  const startIndex = (page - 1) * limit;
+  const products = allProducts.slice(startIndex, startIndex + limit);
   
   let html = `
   <!DOCTYPE html>
@@ -102,19 +107,24 @@ app.get('/', (req, res) => {
       * { box-sizing: border-box; }
       body { font-family: 'Inter', -apple-system, sans-serif; background: #f8fafc; margin: 0; padding: 0; color: var(--dark); }
       .top-banner { background: var(--dark); color: #e2e8f0; text-align: center; padding: 10px 16px; font-size: 13px; font-weight: 600; }
-      header { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 0; sticky; top: 0; z-index: 10; }
+      header { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 0; position: sticky; top: 0; z-index: 10; }
       .container { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
       .logo { font-size: 22px; font-weight: 800; color: var(--dark); text-decoration: none; }
       .logo span { color: var(--primary); }
-      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin: 24px 0; }
-      .card { background: #fff; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: transform 0.2s; }
-      .card:hover { transform: translateY(-4px); }
-      .card-img { width: 100%; height: 200px; object-fit: contain; padding: 16px; background: #fff; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin: 24px 0; }
+      .card { background: #fff; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
+      .card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+      .card-img-container { height: 200px; padding: 16px; display: flex; align-items: center; justify-content: center; background: #fff; }
+      .card-img { max-width: 100%; max-height: 100%; object-fit: contain; }
       .card-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
       .card h3 { font-size: 15px; font-weight: 700; margin: 0 0 10px 0; line-height: 1.4; color: var(--dark); }
       .price { font-size: 20px; font-weight: 800; color: var(--primary); }
       .old-price { text-decoration: line-through; color: #94a3b8; font-size: 13px; margin-left: 6px; }
       .btn-sm { margin-top: 12px; background: #f1f5f9; color: var(--dark); text-align: center; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+      
+      .pagination { display: flex; justify-content: center; gap: 8px; margin: 32px 0 48px 0; }
+      .page-btn { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: #fff; text-decoration: none; color: var(--dark); font-weight: 600; font-size: 14px; }
+      .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     </style>
   </head>
   <body>
@@ -131,7 +141,9 @@ app.get('/', (req, res) => {
   products.forEach(p => {
     html += `
         <a href="/product/${p.slug}" class="card">
-          <img src="${p.image}" class="card-img" alt="${p.name}">
+          <div class="card-img-container">
+            <img src="${p.image}" class="card-img" alt="${p.name}">
+          </div>
           <div class="card-body">
             <h3>${p.name}</h3>
             <div>
@@ -143,6 +155,16 @@ app.get('/', (req, res) => {
         </a>
     `;
   });
+
+  html += `
+      </div>
+
+      <div class="pagination">
+  `;
+
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<a href="/?page=${i}" class="page-btn ${i === page ? 'active' : ''}">${i}</a>`;
+  }
 
   html += `
       </div>
@@ -199,7 +221,8 @@ app.get('/product/:id', (req, res) => {
       .container { max-width: 600px; margin: 0 auto; }
       .back { display: inline-block; margin-bottom: 16px; color: var(--slate); text-decoration: none; font-weight: 600; font-size: 14px; }
       .card { background: #fff; border-radius: 20px; padding: 24px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-      .product-img { width: 100%; max-height: 280px; object-fit: contain; margin-bottom: 20px; }
+      .img-wrapper { height: 260px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+      .product-img { max-width: 100%; max-height: 100%; object-fit: contain; }
       h1 { font-size: 22px; font-weight: 800; margin: 0 0 12px 0; line-height: 1.3; }
       .price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 20px; }
       .price { font-size: 32px; font-weight: 800; color: var(--primary); }
@@ -224,7 +247,9 @@ app.get('/product/:id', (req, res) => {
     <div class="container">
       <a href="/" class="back">← Kataloqa qayıtmaq</a>
       <div class="card">
-        <img src="${product.image}" class="product-img" alt="${product.name}">
+        <div class="img-wrapper">
+          <img src="${product.image}" class="product-img" alt="${product.name}">
+        </div>
         <h1>${product.name}</h1>
 
         <div class="price-row">
